@@ -47,11 +47,13 @@ export async function initDb() {
 
   try {
     await db.execute(`ALTER TABLE user_settings ADD COLUMN targetWeeks INTEGER DEFAULT 4`);
+  } catch (e) {}
+  try {
     await db.execute(`ALTER TABLE user_settings ADD COLUMN dailyGoal INTEGER DEFAULT 7`);
+  } catch (e) {}
+  try {
     await db.execute(`ALTER TABLE user_settings ADD COLUMN height REAL DEFAULT 170`);
-  } catch (e) {
-    // Ignore error if columns already exist
-  }
+  } catch (e) {}
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS weight_logs (
