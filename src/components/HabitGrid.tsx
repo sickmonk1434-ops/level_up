@@ -3,7 +3,7 @@
 import { toggleCompletion, deleteHabit } from "@/app/actions";
 import { Check, Trash2 } from "lucide-react";
 import styles from "./HabitGrid.module.css";
-import { useTransition } from "react";
+import { useOptimistic, useTransition } from "react";
 
 interface Habit {
   id: string;
@@ -26,10 +26,30 @@ interface HabitGridProps {
 }
 
 export function HabitGrid({ habits, completions, dates }: HabitGridProps) {
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
+
+  const [optimisticCompletions, addOptimisticCompletion] = useOptimistic(
+    completions,
+    (state, newCompletion: { habitId: string; date: string; completed: number }) => {
+      const existingIndex = state.findIndex(
+        (c) => c.habitId === newCompletion.habitId && c.date === newCompletion.date
+      );
+      if (existingIndex >= 0) {
+        const newState = [...state];
+        newState[existingIndex] = { ...newState[existingIndex], completed: newCompletion.completed };
+        return newState;
+      }
+      return [...state, newCompletion];
+    }
+  );
 
   function handleToggle(habitId: string, date: string, isCompleted: boolean) {
+    const newStatus = isCompleted ? 0 : 1;
+    
     startTransition(() => {
+      // 1. Instantly update the UI
+      addOptimisticCompletion({ habitId, date, completed: newStatus });
+      // 2. Fire the server action in the background
       toggleCompletion(habitId, date, isCompleted);
     });
   }
@@ -83,7 +103,7 @@ export function HabitGrid({ habits, completions, dates }: HabitGridProps) {
             
             <div className={styles.datesColumn}>
               {dates.map((date) => {
-                const isCompleted = completions.some(
+                const isCompleted = optimisticCompletions.some(
                   (c) => c.habitId === habit.id && c.date === date && c.completed === 1
                 );
                 
@@ -93,7 +113,6 @@ export function HabitGrid({ habits, completions, dates }: HabitGridProps) {
                     onClick={() => handleToggle(habit.id, date, isCompleted)}
                     className={`${styles.cellBtn} ${isCompleted ? styles.completed : ''}`}
                     style={isCompleted ? { backgroundColor: habit.color, borderColor: habit.color } : {}}
-                    disabled={isPending}
                   >
                     {isCompleted && <Check size={14} strokeWidth={3} />}
                   </button>
