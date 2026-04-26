@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { getServerSession } from "next-auth";
 import { revalidatePath } from "next/cache";
+import { authOptions } from "./api/auth/[...nextauth]/route";
 
 export async function initDb() {
   await db.execute(`
@@ -29,7 +30,7 @@ export async function initDb() {
 }
 
 export async function getHabits() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) return [];
 
   const userId = session.user.email; // Using email as user identifier for simplicity
@@ -43,7 +44,7 @@ export async function getHabits() {
 }
 
 export async function addHabit(formData: FormData) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) throw new Error("Unauthorized");
 
   const name = formData.get("name") as string;
@@ -62,7 +63,7 @@ export async function addHabit(formData: FormData) {
 }
 
 export async function toggleCompletion(habitId: string, date: string, currentStatus: boolean) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) throw new Error("Unauthorized");
 
   const newStatus = currentStatus ? 0 : 1;
@@ -82,7 +83,7 @@ export async function toggleCompletion(habitId: string, date: string, currentSta
 }
 
 export async function getCompletions(startDate: string, endDate: string) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) return [];
   const userId = session.user.email;
 
@@ -99,7 +100,7 @@ export async function getCompletions(startDate: string, endDate: string) {
 }
 
 export async function deleteHabit(habitId: string) {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   if (!session?.user?.email) throw new Error("Unauthorized");
 
   await db.execute({

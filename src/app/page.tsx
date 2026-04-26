@@ -5,6 +5,7 @@ import { HabitGrid } from "@/components/HabitGrid";
 import { AuthButtons } from "@/components/AuthButtons";
 import styles from "./page.module.css";
 import { Flame, CheckCircle, TrendingUp } from "lucide-react";
+import { authOptions } from "./api/auth/[...nextauth]/route";
 
 export default async function Home() {
   // Try to initialize the DB automatically on load (in a real app, do this securely)
@@ -14,7 +15,7 @@ export default async function Home() {
     console.error("DB Init error", e);
   }
 
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
 
   if (!session) {
     return (
