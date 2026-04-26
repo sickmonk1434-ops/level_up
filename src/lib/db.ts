@@ -1,10 +1,10 @@
-import { createClient } from "@libsql/client";
+import { createClient } from "@libsql/client/web";
 
 function initializeDb() {
   try {
     const url = process.env.TURSO_DATABASE_URL?.trim();
     if (!url || url === "libsql://your-turso-database-url" || !url.includes("://")) {
-      return createClient({ url: "file:./local.db" });
+      return createClient({ url: "http://127.0.0.1:8080" });
     }
     return createClient({
       url,
@@ -12,8 +12,8 @@ function initializeDb() {
     });
   } catch (e) {
     console.error("Failed to initialize database client during module import:", e);
-    // Fallback to local DB if the URL format was completely invalid to prevent 500 errors
-    return createClient({ url: "file:./local.db" });
+    // Fallback to dummy DB if the URL format was completely invalid to prevent 500 errors
+    return createClient({ url: "http://127.0.0.1:8080" });
   }
 }
 
