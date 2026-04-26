@@ -35,6 +35,7 @@ export default async function Home() {
   const settings = await getUserSettings();
   const dailyGoal = settings?.dailyGoal || 7;
   const targetWeeks = settings?.targetWeeks || 4;
+  const heightCm = settings?.height || 170;
   
   // Helper to get local YYYY-MM-DD
   const getLocalDateString = (d: Date) => {
@@ -150,6 +151,19 @@ export default async function Home() {
 
   const perfectWeeksCount = calculateGlobalWeekProgress();
 
+  // 6. BMI Calculation
+  const heightM = heightCm / 100;
+  const bmi = latestWeight && heightCm ? (latestWeight / (heightM * heightM)).toFixed(1) : null;
+  
+  const getBmiCategory = (val: number) => {
+    if (val < 18.5) return { label: "Underweight", color: "#60a5fa" };
+    if (val < 25) return { label: "Normal", color: "#10b981" };
+    if (val < 30) return { label: "Overweight", color: "#f59e0b" };
+    return { label: "Obese", color: "#ef4444" };
+  };
+  
+  const bmiInfo = bmi ? getBmiCategory(parseFloat(bmi)) : null;
+
   return (
     <main className={styles.main}>
       <header className={styles.header}>
@@ -159,7 +173,7 @@ export default async function Home() {
         </div>
         <div className={styles.headerActions}>
           <WeightTracker latestWeight={latestWeight} />
-          <UserSettings currentTarget={targetWeeks} currentGoal={dailyGoal} />
+          <UserSettings currentTarget={targetWeeks} currentGoal={dailyGoal} currentHeight={heightCm} />
           <AuthButtons session={session} />
         </div>
       </header>
@@ -202,6 +216,16 @@ export default async function Home() {
           <div className={styles.statInfo}>
             <p>Current Weight</p>
             <h3>{latestWeight ? latestWeight : '--'} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>KG</span></h3>
+          </div>
+        </div>
+
+        <div className={`${styles.statCard} glass`}>
+          <div className={styles.statIcon} style={{ background: bmiInfo ? `${bmiInfo.color}20` : 'rgba(255, 255, 255, 0.1)', color: bmiInfo ? bmiInfo.color : 'white' }}>
+            <TrendingUp size={24} />
+          </div>
+          <div className={styles.statInfo}>
+            <p>BMI Index</p>
+            <h3>{bmi ? bmi : '--'} <span style={{fontSize: '0.8rem', color: bmiInfo ? bmiInfo.color : '#a3a3a3', marginLeft: '0.5rem'}}>{bmiInfo?.label}</span></h3>
           </div>
         </div>
       </section>

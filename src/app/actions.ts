@@ -40,13 +40,15 @@ export async function initDb() {
       userId TEXT PRIMARY KEY,
       defaultsInitialized INTEGER DEFAULT 0,
       targetWeeks INTEGER DEFAULT 4,
-      dailyGoal INTEGER DEFAULT 7
+      dailyGoal INTEGER DEFAULT 7,
+      height REAL DEFAULT 170
     );
   `);
 
   try {
     await db.execute(`ALTER TABLE user_settings ADD COLUMN targetWeeks INTEGER DEFAULT 4`);
     await db.execute(`ALTER TABLE user_settings ADD COLUMN dailyGoal INTEGER DEFAULT 7`);
+    await db.execute(`ALTER TABLE user_settings ADD COLUMN height REAL DEFAULT 170`);
   } catch (e) {
     // Ignore error if columns already exist
   }
@@ -223,10 +225,11 @@ export async function updateUserSettings(formData: FormData) {
 
   const targetWeeks = parseInt(formData.get("targetWeeks") as string) || 4;
   const dailyGoal = parseInt(formData.get("dailyGoal") as string) || 7;
+  const height = parseFloat(formData.get("height") as string) || 170;
 
   await db.execute({
-    sql: "UPDATE user_settings SET targetWeeks = ?, dailyGoal = ? WHERE userId = ?",
-    args: [targetWeeks, dailyGoal, session.user.email]
+    sql: "UPDATE user_settings SET targetWeeks = ?, dailyGoal = ?, height = ? WHERE userId = ?",
+    args: [targetWeeks, dailyGoal, height, session.user.email]
   });
 
   revalidatePath("/");

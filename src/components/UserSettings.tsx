@@ -5,7 +5,7 @@ import { updateUserSettings } from "@/app/actions";
 import { Settings, X } from "lucide-react";
 import styles from "./HabitManager.module.css"; // Reuse modal styles
 
-export function UserSettings({ currentTarget, currentGoal }: { currentTarget: number, currentGoal: number }) {
+export function UserSettings({ currentTarget, currentGoal, currentHeight }: { currentTarget: number, currentGoal: number, currentHeight: number }) {
   const [isOpen, setIsOpen] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -38,6 +38,12 @@ export function UserSettings({ currentTarget, currentGoal }: { currentTarget: nu
                 <label htmlFor="dailyGoal">Daily Habit Goal</label>
                 <input type="number" id="dailyGoal" name="dailyGoal" min="1" max="20" defaultValue={currentGoal} />
                 <p className={styles.formHint}>How many habits do you want to complete each day?</p>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="height">Height (CM)</label>
+                <input type="number" id="height" name="height" step="0.1" min="50" max="250" defaultValue={currentHeight || 170} />
+                <p className={styles.formHint}>Used for BMI calculation.</p>
               </div>
 
               <div className={styles.formGroup}>
