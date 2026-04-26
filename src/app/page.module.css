@@ -43,6 +43,12 @@
   margin-bottom: 2.5rem;
 }
 
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .greeting {
   font-size: 2rem;
   font-weight: 700;

@@ -207,18 +207,8 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
                   {habit.emoji}
                 </div>
                 <div className={styles.habitText}>
-                  <div className={styles.habitName}>
-                    {habit.name}
-                    <span className={styles.streakBadge}>
-                      <Flame size={12} fill="currentColor" /> {calculateStreak(habit.id)}
-                    </span>
-                  </div>
-                  <div className={styles.habitMeta}>
-                    <span className={styles.habitCategory}>{habit.category}</span>
-                    <span className={styles.targetInfo}>
-                      Target: {calculateWeekProgress(habit.id).perfectWeeks}/{habit.targetWeeks || 1} weeks
-                    </span>
-                  </div>
+                  <div className={styles.habitName}>{habit.name}</div>
+                  <div className={styles.habitCategory}>{habit.category}</div>
                 </div>
                 <div className={styles.actionButtons}>
                   <button onClick={() => setEditingHabit(habit)} className={styles.editBtn}>
@@ -290,11 +280,6 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
                   <option value="Learning">Learning</option>
                   <option value="Other">Other</option>
                 </select>
-              </div>
-
-              <div className={styles.formGroup}>
-                <label htmlFor="targetWeeks">Target (Weeks)</label>
-                <input type="number" id="targetWeeks" name="targetWeeks" min="1" max="52" defaultValue={editingHabit.targetWeeks || 4} />
               </div>
 
               <button type="submit" className={styles.submitBtn}>

@@ -38,9 +38,18 @@ export async function initDb() {
   await db.execute(`
     CREATE TABLE IF NOT EXISTS user_settings (
       userId TEXT PRIMARY KEY,
-      defaultsInitialized INTEGER DEFAULT 0
+      defaultsInitialized INTEGER DEFAULT 0,
+      targetWeeks INTEGER DEFAULT 4,
+      dailyGoal INTEGER DEFAULT 7
     );
   `);
+
+  try {
+    await db.execute(`ALTER TABLE user_settings ADD COLUMN targetWeeks INTEGER DEFAULT 4`);
+    await db.execute(`ALTER TABLE user_settings ADD COLUMN dailyGoal INTEGER DEFAULT 7`);
+  } catch (e) {
+    // Ignore error if columns already exist
+  }
 }
 
 export async function getHabits() {
@@ -181,6 +190,33 @@ export async function editHabit(formData: FormData) {
   await db.execute({
     sql: "UPDATE habits SET name = ?, emoji = ?, color = ?, category = ?, targetWeeks = ? WHERE id = ? AND userId = ?",
     args: [name, emoji, color, category, targetWeeks, id, session.user.email]
+  });
+
+  revalidatePath("/");
+}
+
+export async function getUserSettings() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return null;
+
+  const result = await db.execute({
+    sql: "SELECT * FROM user_settings WHERE userId = ?",
+    args: [session.user.email]
+  });
+
+  return result.rows[0] as any;
+}
+
+export async function updateUserSettings(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Unauthorized");
+
+  const targetWeeks = parseInt(formData.get("targetWeeks") as string) || 4;
+  const dailyGoal = parseInt(formData.get("dailyGoal") as string) || 7;
+
+  await db.execute({
+    sql: "UPDATE user_settings SET targetWeeks = ?, dailyGoal = ? WHERE userId = ?",
+    args: [targetWeeks, dailyGoal, session.user.email]
   });
 
   revalidatePath("/");

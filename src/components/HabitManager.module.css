@@ -20,6 +20,24 @@
   background: var(--primary-hover);
 }
 
+.settingsBtn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a3a3a3;
+  padding: 0.5rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.settingsBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
 .overlay {
   position: fixed;
   inset: 0;

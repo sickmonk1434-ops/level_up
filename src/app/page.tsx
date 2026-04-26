@@ -1,8 +1,9 @@
 import { getServerSession } from "next-auth";
-import { getHabits, getCompletions, initDb } from "./actions";
+import { getHabits, getCompletions, initDb, getUserSettings } from "./actions";
 import { HabitManager } from "@/components/HabitManager";
 import { HabitGrid } from "@/components/HabitGrid";
 import { AuthButtons } from "@/components/AuthButtons";
+import { UserSettings } from "@/components/UserSettings";
 import styles from "./page.module.css";
 import { Flame, CheckCircle, TrendingUp } from "lucide-react";
 import { authOptions } from "./api/auth/[...nextauth]/route";
@@ -30,6 +31,9 @@ export default async function Home() {
   }
 
   const habits = await getHabits();
+  const settings = await getUserSettings();
+  const dailyGoal = settings?.dailyGoal || 7;
+  const targetWeeks = settings?.targetWeeks || 4;
   
   // Helper to get local YYYY-MM-DD
   const getLocalDateString = (d: Date) => {
@@ -74,6 +78,75 @@ export default async function Home() {
   const monthlyCompleted = monthlyCompletions.length;
   const monthlyRate = habits.length > 0 ? Math.round((monthlyCompleted / monthlyTotalPossible) * 100) : 0;
 
+  // 4. Global Streak (Consecutive days hitting the dailyGoal)
+  const calculateGlobalStreak = () => {
+    let streak = 0;
+    let checkDate = new Date(today);
+    
+    // Group completions by date
+    const completionsByDate: Record<string, number> = {};
+    allCompletions.forEach((c: any) => {
+      if (c.completed) {
+        completionsByDate[c.date] = (completionsByDate[c.date] || 0) + 1;
+      }
+    });
+
+    const todayStr = getLocalDateString(checkDate);
+    // If goal not met today, start from yesterday
+    if ((completionsByDate[todayStr] || 0) < dailyGoal) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    while (true) {
+      const dateStr = getLocalDateString(checkDate);
+      if ((completionsByDate[dateStr] || 0) >= dailyGoal) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  const globalStreak = calculateGlobalStreak();
+
+  // 5. Global Week Progress (Weeks hitting 7/7 days of dailyGoal)
+  const calculateGlobalWeekProgress = () => {
+    let perfectWeeks = 0;
+    
+    // Find the Monday of the current week
+    const currentDayOfWeek = today.getDay();
+    const daysToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
+    const actualCurrentMonday = new Date(today);
+    actualCurrentMonday.setDate(today.getDate() - daysToMonday);
+
+    // Group completions by date
+    const completionsByDate: Record<string, number> = {};
+    allCompletions.forEach((c: any) => {
+      if (c.completed) {
+        completionsByDate[c.date] = (completionsByDate[c.date] || 0) + 1;
+      }
+    });
+
+    for (let i = 1; i <= 52; i++) {
+      let perfect = true;
+      for (let j = 0; j < 7; j++) {
+        const d = new Date(actualCurrentMonday);
+        d.setDate(actualCurrentMonday.getDate() - (i * 7) + j);
+        if ((completionsByDate[getLocalDateString(d)] || 0) < dailyGoal) {
+          perfect = false;
+          break;
+        }
+      }
+      if (perfect) perfectWeeks++;
+      else break;
+    }
+    return perfectWeeks;
+  };
+
+  const perfectWeeksCount = calculateGlobalWeekProgress();
+
   return (
     <main className={styles.main}>
       <header className={styles.header}>
@@ -81,7 +154,10 @@ export default async function Home() {
           <h1 className={styles.greeting}>Welcome back, {session.user?.name?.split(" ")[0] || "User"}</h1>
           <p className={styles.subtitle}>Let's keep the momentum going.</p>
         </div>
-        <AuthButtons session={session} />
+        <div className={styles.headerActions}>
+          <UserSettings currentTarget={targetWeeks} currentGoal={dailyGoal} />
+          <AuthButtons session={session} />
+        </div>
       </header>
 
       <section className={styles.statsRow}>
@@ -90,8 +166,8 @@ export default async function Home() {
             <Flame size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>Daily Goal</p>
-            <h3>{todayCompletions} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ 7</span></h3>
+            <p>Global Streak</p>
+            <h3>{globalStreak} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>days</span></h3>
           </div>
         </div>
         
@@ -100,8 +176,8 @@ export default async function Home() {
             <CheckCircle size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>Weekly Goal</p>
-            <h3>{weeklyCompletions} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ 55</span></h3>
+            <p>Target Progress</p>
+            <h3>{perfectWeeksCount} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ {targetWeeks} weeks</span></h3>
           </div>
         </div>
 
@@ -110,8 +186,8 @@ export default async function Home() {
             <TrendingUp size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>Monthly Goal</p>
-            <h3>{monthlyRate}% <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ 90%</span></h3>
+            <p>Daily Goal</p>
+            <h3>{todayCompletions} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ {dailyGoal} habits</span></h3>
           </div>
         </div>
       </section>
