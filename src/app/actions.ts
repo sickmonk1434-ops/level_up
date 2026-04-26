@@ -27,6 +27,13 @@ export async function initDb() {
       UNIQUE(habitId, date)
     );
   `);
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS user_settings (
+      userId TEXT PRIMARY KEY,
+      defaultsInitialized INTEGER DEFAULT 0
+    );
+  `);
 }
 
 export async function getHabits() {
@@ -35,8 +42,44 @@ export async function getHabits() {
 
   const userId = session.user.email; // Using email as user identifier for simplicity
   
+  // Check if defaults have been initialized
+  const settings = await db.execute({
+    sql: "SELECT * FROM user_settings WHERE userId = ?",
+    args: [userId]
+  });
+
+  if (settings.rows.length === 0) {
+    // Insert default habits from the user's list
+    const defaultHabits = [
+      { name: "Wake up at 05:00", emoji: "⏰", color: "#f87171", category: "Health" },
+      { name: "Gym", emoji: "💪", color: "#facc15", category: "Health" },
+      { name: "Stop Watching Porn", emoji: "💦", color: "#60a5fa", category: "Mindfulness" },
+      { name: "Reading / Learning", emoji: "📖", color: "#34d399", category: "Learning" },
+      { name: "Budget Tracking", emoji: "💰", color: "#a78bfa", category: "Productivity" },
+      { name: "Project Work", emoji: "🎯", color: "#fb923c", category: "Productivity" },
+      { name: "No Alcohol", emoji: "🍾", color: "#ef4444", category: "Health" },
+      { name: "Social Media Detox", emoji: "🌿", color: "#4ade80", category: "Mindfulness" },
+      { name: "Goal Journaling", emoji: "📝", color: "#fbbf24", category: "Mindfulness" },
+      { name: "Cold Shower", emoji: "🚿", color: "#38bdf8", category: "Health" }
+    ];
+
+    for (const h of defaultHabits) {
+      await db.execute({
+        sql: "INSERT INTO habits (id, userId, name, category, emoji, color) VALUES (?, ?, ?, ?, ?, ?)",
+        args: [crypto.randomUUID(), userId, h.name, h.category, h.emoji, h.color]
+      });
+      // Small delay to ensure correct ASC sorting order based on timestamp
+      await new Promise(resolve => setTimeout(resolve, 50)); 
+    }
+
+    await db.execute({
+      sql: "INSERT INTO user_settings (userId, defaultsInitialized) VALUES (?, 1)",
+      args: [userId]
+    });
+  }
+
   const result = await db.execute({
-    sql: "SELECT * FROM habits WHERE userId = ? ORDER BY createdAt DESC",
+    sql: "SELECT * FROM habits WHERE userId = ? ORDER BY createdAt ASC",
     args: [userId]
   });
 
