@@ -68,49 +68,225 @@
 .habitInfo {
   width: 250px;
   min-width: 250px;
+  padding: 0 1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding-right: 1rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.02);
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+.habitText {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .habitEmoji {
-  width: 40px;
-  height: 40px;
-  border-radius: 0.75rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+  flex-shrink: 0;
 }
 
 .habitName {
-  font-weight: 600;
-  font-size: 1rem;
-  margin-bottom: 0.125rem;
+  font-weight: 500;
+  color: white;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .habitCategory {
   font-size: 0.75rem;
-  color: #737373;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  color: #a3a3a3;
+  margin-top: 0.1rem;
 }
 
-.deleteBtn {
-  margin-left: auto;
-  color: #525252;
-  opacity: 0;
-  transition: opacity 0.2s, color 0.2s;
+.actionButtons {
+  display: flex;
+  gap: 0.25rem;
+  opacity: 1; /* Always visible for mobile */
+  transition: opacity 0.2s;
+}
+
+/* On larger screens, we can fade them slightly when not hovering */
+@media (hover: hover) {
+  .actionButtons {
+    opacity: 0.2;
+  }
+  .habitRow:hover .actionButtons {
+    opacity: 1;
+  }
+}
+
+.editBtn, .deleteBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
   padding: 0.25rem;
+  border-radius: 4px;
+  color: #737373;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.habitRow:hover .deleteBtn {
-  opacity: 1;
+.editBtn:hover {
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
 }
 
 .deleteBtn:hover {
-  color: var(--danger);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Modal Styles */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.modal {
+  width: 90%;
+  max-width: 400px;
+  padding: 2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 15, 20, 0.8);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.modalHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+  margin: 0;
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  color: #a3a3a3;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.row {
+  display: flex;
+  gap: 1rem;
+}
+
+.formGroup label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a3a3a3;
+}
+
+.formGroup input,
+.formGroup select {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  color: white;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  width: 100%;
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+  outline: none;
+  border-color: #60a5fa;
+}
+
+.formGroup input[type="color"] {
+  padding: 0.25rem;
+  height: 46px;
+  cursor: pointer;
+}
+
+.formGroup input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.formGroup input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 8px;
+}
+
+.submitBtn {
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  margin-top: 1rem;
+}
+
+.submitBtn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .cellBtn {

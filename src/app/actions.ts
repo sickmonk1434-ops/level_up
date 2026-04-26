@@ -158,3 +158,21 @@ export async function deleteHabit(habitId: string) {
 
   revalidatePath("/");
 }
+
+export async function editHabit(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Unauthorized");
+
+  const id = formData.get("id") as string;
+  const name = formData.get("name") as string;
+  const emoji = formData.get("emoji") as string;
+  const color = formData.get("color") as string;
+  const category = formData.get("category") as string;
+  
+  await db.execute({
+    sql: "UPDATE habits SET name = ?, emoji = ?, color = ?, category = ? WHERE id = ? AND userId = ?",
+    args: [name, emoji, color, category, id, session.user.email]
+  });
+
+  revalidatePath("/");
+}
