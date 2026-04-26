@@ -50,6 +50,16 @@ export async function initDb() {
   } catch (e) {
     // Ignore error if columns already exist
   }
+
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS weight_logs (
+      id TEXT PRIMARY KEY,
+      userId TEXT NOT NULL,
+      date TEXT NOT NULL,
+      weight REAL NOT NULL,
+      UNIQUE(userId, date)
+    );
+  `);
 }
 
 export async function getHabits() {
@@ -220,4 +230,39 @@ export async function updateUserSettings(formData: FormData) {
   });
 
   revalidatePath("/");
+}
+
+export async function logWeight(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Unauthorized");
+
+  const weight = parseFloat(formData.get("weight") as string);
+  const date = formData.get("date") as string;
+  const userId = session.user.email;
+  const id = crypto.randomUUID();
+
+  if (isNaN(weight)) throw new Error("Invalid weight");
+
+  await db.execute({
+    sql: `
+      INSERT INTO weight_logs (id, userId, date, weight) 
+      VALUES (?, ?, ?, ?)
+      ON CONFLICT(userId, date) DO UPDATE SET weight = excluded.weight
+    `,
+    args: [id, userId, date, weight]
+  });
+
+  revalidatePath("/");
+}
+
+export async function getWeights(startDate: string, endDate: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) return [];
+
+  const result = await db.execute({
+    sql: "SELECT * FROM weight_logs WHERE userId = ? AND date >= ? AND date <= ? ORDER BY date DESC",
+    args: [session.user.email, startDate, endDate]
+  });
+
+  return result.rows as any;
 }

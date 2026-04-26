@@ -1,11 +1,12 @@
 import { getServerSession } from "next-auth";
-import { getHabits, getCompletions, initDb, getUserSettings } from "./actions";
+import { getHabits, getCompletions, initDb, getUserSettings, getWeights } from "./actions";
 import { HabitManager } from "@/components/HabitManager";
 import { HabitGrid } from "@/components/HabitGrid";
 import { AuthButtons } from "@/components/AuthButtons";
 import { UserSettings } from "@/components/UserSettings";
+import { WeightTracker } from "@/components/WeightTracker";
 import styles from "./page.module.css";
-import { Flame, CheckCircle, TrendingUp } from "lucide-react";
+import { Flame, CheckCircle, TrendingUp, Scale } from "lucide-react";
 import { authOptions } from "./api/auth/[...nextauth]/route";
 
 export default async function Home() {
@@ -57,6 +58,8 @@ export default async function Home() {
   
   // Fetch full 90 days for stats, and up to 30 days in future to support future checks
   const allCompletions = await getCompletions(formattedStart90, formattedEnd);
+  const weightLogs = await getWeights(formattedStart90, formattedToday);
+  const latestWeight = weightLogs.length > 0 ? weightLogs[0].weight : null;
 
   // Calculate Goals
   // 1. Daily Completions (today)
@@ -155,6 +158,7 @@ export default async function Home() {
           <p className={styles.subtitle}>Let's keep the momentum going.</p>
         </div>
         <div className={styles.headerActions}>
+          <WeightTracker latestWeight={latestWeight} />
           <UserSettings currentTarget={targetWeeks} currentGoal={dailyGoal} />
           <AuthButtons session={session} />
         </div>
@@ -188,6 +192,16 @@ export default async function Home() {
           <div className={styles.statInfo}>
             <p>Daily Goal</p>
             <h3>{todayCompletions} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ {dailyGoal} habits</span></h3>
+          </div>
+        </div>
+
+        <div className={`${styles.statCard} glass`}>
+          <div className={styles.statIcon} style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--success)' }}>
+            <Scale size={24} />
+          </div>
+          <div className={styles.statInfo}>
+            <p>Current Weight</p>
+            <h3>{latestWeight ? latestWeight : '--'} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>KG</span></h3>
           </div>
         </div>
       </section>
