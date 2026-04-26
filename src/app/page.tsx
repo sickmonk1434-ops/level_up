@@ -31,33 +31,44 @@ export default async function Home() {
 
   const habits = await getHabits();
   
+  // Helper to get local YYYY-MM-DD
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   // Calculate date range for stats and client history (90 days)
   const today = new Date();
+  const formattedToday = getLocalDateString(today);
   
   const ninetyDaysAgo = new Date(today);
   ninetyDaysAgo.setDate(today.getDate() - 89);
-  const formattedStart90 = ninetyDaysAgo.toISOString().split("T")[0];
+  const formattedStart90 = getLocalDateString(ninetyDaysAgo);
   
-  const formattedEnd = today.toISOString().split("T")[0];
+  const thirtyDaysInFuture = new Date(today);
+  thirtyDaysInFuture.setDate(today.getDate() + 30);
+  const formattedEnd = getLocalDateString(thirtyDaysInFuture);
   
-  // Fetch full 90 days for stats and history
+  // Fetch full 90 days for stats, and up to 30 days in future to support future checks
   const allCompletions = await getCompletions(formattedStart90, formattedEnd);
 
   // Calculate Goals
   // 1. Daily Completions (today)
-  const todayCompletions = allCompletions.filter((c: any) => c.date === formattedEnd && c.completed).length;
+  const todayCompletions = allCompletions.filter((c: any) => c.date === formattedToday && c.completed).length;
   
   // 2. Weekly Completions (last 7 days)
   const sevenDaysAgo = new Date(today);
   sevenDaysAgo.setDate(today.getDate() - 6);
-  const formattedStart7 = sevenDaysAgo.toISOString().split("T")[0];
-  const weeklyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart7 && c.completed).length;
+  const formattedStart7 = getLocalDateString(sevenDaysAgo);
+  const weeklyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart7 && c.date <= formattedToday && c.completed).length;
   
   // 3. Monthly Completion Rate (last 30 days)
   const thirtyDaysAgo = new Date(today);
   thirtyDaysAgo.setDate(today.getDate() - 29);
-  const formattedStart30 = thirtyDaysAgo.toISOString().split("T")[0];
-  const monthlyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart30 && c.completed);
+  const formattedStart30 = getLocalDateString(thirtyDaysAgo);
+  const monthlyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart30 && c.date <= formattedToday && c.completed);
   
   const monthlyTotalPossible = habits.length * 30;
   const monthlyCompleted = monthlyCompletions.length;

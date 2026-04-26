@@ -69,6 +69,14 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
   const today = new Date();
   today.setHours(0, 0, 0, 0); // reset time for clean date math
   
+  // Helper to get local YYYY-MM-DD
+  const getLocalDateString = (d: Date) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
   // Find the Monday of the current week
   const currentDayOfWeek = today.getDay();
   // In JS, Sunday is 0. If it's Sunday, we go back 6 days to Monday. Otherwise, go back (currentDayOfWeek - 1)
@@ -86,10 +94,10 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
   for (let i = 0; i < 7; i++) {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
-    weekDates.push(d.toISOString().split("T")[0]);
+    weekDates.push(getLocalDateString(d));
   }
 
-  const todayStr = today.toISOString().split("T")[0];
+  const todayStr = getLocalDateString(today);
 
   return (
     <div className={styles.gridContainer}>
