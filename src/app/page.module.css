@@ -1,0 +1,119 @@
+.main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+.unauthMain {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.heroCard {
+  max-width: 500px;
+  padding: 3rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.heroCard h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  background: linear-gradient(to right, var(--primary), #d8b4fe);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.heroCard p {
+  color: #a3a3a3;
+  line-height: 1.6;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+
+.greeting {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  color: #a3a3a3;
+}
+
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.statCard {
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.statIcon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.statInfo p {
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  margin-bottom: 0.25rem;
+}
+
+.statInfo h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.trackerSection {
+  padding: 2rem;
+}
+
+.trackerHeader {
+  margin-bottom: 2rem;
+}
+
+.trackerHeader h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.emptyState {
+  padding: 4rem 2rem;
+  text-align: center;
+  color: #a3a3a3;
+}
+
+@media (max-width: 768px) {
+  .main {
+    padding: 1rem;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+}
