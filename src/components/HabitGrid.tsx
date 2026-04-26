@@ -216,7 +216,7 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
                   <div className={styles.habitMeta}>
                     <span className={styles.habitCategory}>{habit.category}</span>
                     <span className={styles.targetInfo}>
-                      Target: {calculateWeekProgress(habit.id).perfectWeeks}/{habit.targetWeeks} weeks
+                      Target: {calculateWeekProgress(habit.id).perfectWeeks}/{habit.targetWeeks || 1} weeks
                     </span>
                   </div>
                 </div>
@@ -294,7 +294,7 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
 
               <div className={styles.formGroup}>
                 <label htmlFor="targetWeeks">Target (Weeks)</label>
-                <input type="number" id="targetWeeks" name="targetWeeks" min="1" max="52" defaultValue={editingHabit.targetWeeks} />
+                <input type="number" id="targetWeeks" name="targetWeeks" min="1" max="52" defaultValue={editingHabit.targetWeeks || 4} />
               </div>
 
               <button type="submit" className={styles.submitBtn}>

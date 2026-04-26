@@ -82,6 +82,7 @@
 }
 
 .formGroup input[type="text"],
+.formGroup input[type="number"],
 .formGroup select {
   width: 100%;
   padding: 0.75rem 1rem;
