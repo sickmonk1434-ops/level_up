@@ -31,26 +31,44 @@ export default async function Home() {
 
   const habits = await getHabits();
   
-  // Calculate date range (last 14 days for the grid)
+  // Calculate date range for the grid (14 days) and stats (30 days)
   const today = new Date();
-  const startDate = new Date(today);
-  startDate.setDate(today.getDate() - 13);
   
-  const formattedStart = startDate.toISOString().split("T")[0];
+  const fourteenDaysAgo = new Date(today);
+  fourteenDaysAgo.setDate(today.getDate() - 13);
+  const formattedStart14 = fourteenDaysAgo.toISOString().split("T")[0];
+  
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 29);
+  const formattedStart30 = thirtyDaysAgo.toISOString().split("T")[0];
+  
   const formattedEnd = today.toISOString().split("T")[0];
   
-  const completions = await getCompletions(formattedStart, formattedEnd);
+  // Fetch full 30 days for stats
+  const allCompletions = await getCompletions(formattedStart30, formattedEnd);
 
-  // Generate date array for the last 14 days
+  // Generate date array for the last 14 days (for the grid)
   const dates = [];
   for (let i = 0; i <= 13; i++) {
-    const d = new Date(startDate);
-    d.setDate(startDate.getDate() + i);
+    const d = new Date(fourteenDaysAgo);
+    d.setDate(fourteenDaysAgo.getDate() + i);
     dates.push(d.toISOString().split("T")[0]);
   }
 
-  // Calculate some simple stats
-  const totalCompleted = completions.filter((c: any) => c.completed).length;
+  // Calculate Goals
+  // 1. Daily Completions (today)
+  const todayCompletions = allCompletions.filter((c: any) => c.date === formattedEnd && c.completed).length;
+  
+  // 2. Weekly Completions (last 7 days)
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  const formattedStart7 = sevenDaysAgo.toISOString().split("T")[0];
+  const weeklyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart7 && c.completed).length;
+  
+  // 3. Monthly Completion Rate (last 30 days)
+  const monthlyTotalPossible = habits.length * 30;
+  const monthlyCompleted = allCompletions.filter((c: any) => c.completed).length;
+  const monthlyRate = habits.length > 0 ? Math.round((monthlyCompleted / monthlyTotalPossible) * 100) : 0;
 
   return (
     <main className={styles.main}>
@@ -68,8 +86,8 @@ export default async function Home() {
             <Flame size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>Active Streaks</p>
-            <h3>{habits.length > 0 ? '🔥 On Fire' : 'No Habits'}</h3>
+            <p>Daily Goal</p>
+            <h3>{todayCompletions} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ 7</span></h3>
           </div>
         </div>
         
@@ -78,8 +96,8 @@ export default async function Home() {
             <CheckCircle size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>14-Day Completions</p>
-            <h3>{totalCompleted}</h3>
+            <p>Weekly Goal</p>
+            <h3>{weeklyCompletions} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ 55</span></h3>
           </div>
         </div>
 
@@ -88,8 +106,8 @@ export default async function Home() {
             <TrendingUp size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>Completion Rate</p>
-            <h3>{habits.length > 0 ? Math.round((totalCompleted / (habits.length * 14)) * 100) : 0}%</h3>
+            <p>Monthly Goal</p>
+            <h3>{monthlyRate}% <span style={{fontSize: '1rem', color: '#a3a3a3'}}>/ 90%</span></h3>
           </div>
         </div>
       </section>
@@ -104,7 +122,7 @@ export default async function Home() {
             <p>You haven't tracked any habits yet. Click the + button to start leveling up!</p>
           </div>
         ) : (
-          <HabitGrid habits={habits} completions={completions} dates={dates} />
+          <HabitGrid habits={habits} completions={allCompletions} dates={dates} />
         )}
       </section>
 
