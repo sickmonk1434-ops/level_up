@@ -148,17 +148,41 @@
 }
 
 .habitName {
-  font-weight: 500;
-  color: white;
+  font-weight: 600;
+  color: var(--text-primary);
   font-size: 0.95rem;
-  line-height: 1.2;
-  word-break: break-word;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.streakBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.habitMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .habitCategory {
   font-size: 0.75rem;
   color: #a3a3a3;
-  margin-top: 0.1rem;
+}
+
+.targetInfo {
+  font-size: 0.7rem;
+  color: var(--primary);
+  font-weight: 500;
 }
 
 .actionButtons {

@@ -14,9 +14,16 @@ export async function initDb() {
       category TEXT,
       emoji TEXT,
       color TEXT,
+      targetWeeks INTEGER DEFAULT 1,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
     );
   `);
+
+  try {
+    await db.execute(`ALTER TABLE habits ADD COLUMN targetWeeks INTEGER DEFAULT 1`);
+  } catch (e) {
+    // Ignore error if column already exists
+  }
 
   await db.execute(`
     CREATE TABLE IF NOT EXISTS completions (
@@ -65,8 +72,8 @@ export async function getHabits() {
 
     for (const h of defaultHabits) {
       await db.execute({
-        sql: "INSERT INTO habits (id, userId, name, category, emoji, color) VALUES (?, ?, ?, ?, ?, ?)",
-        args: [crypto.randomUUID(), userId, h.name, h.category, h.emoji, h.color]
+        sql: "INSERT INTO habits (id, userId, name, category, emoji, color, targetWeeks) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        args: [crypto.randomUUID(), userId, h.name, h.category, h.emoji, h.color, 1]
       });
       // Small delay to ensure correct ASC sorting order based on timestamp
       await new Promise(resolve => setTimeout(resolve, 50)); 
@@ -94,12 +101,13 @@ export async function addHabit(formData: FormData) {
   const emoji = formData.get("emoji") as string;
   const color = formData.get("color") as string;
   const category = formData.get("category") as string;
+  const targetWeeks = parseInt(formData.get("targetWeeks") as string) || 1;
   const userId = session.user.email;
   const id = crypto.randomUUID();
 
   await db.execute({
-    sql: "INSERT INTO habits (id, userId, name, category, emoji, color) VALUES (?, ?, ?, ?, ?, ?)",
-    args: [id, userId, name, category, emoji, color]
+    sql: "INSERT INTO habits (id, userId, name, category, emoji, color, targetWeeks) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    args: [id, userId, name, category, emoji, color, targetWeeks]
   });
 
   revalidatePath("/");
@@ -168,10 +176,11 @@ export async function editHabit(formData: FormData) {
   const emoji = formData.get("emoji") as string;
   const color = formData.get("color") as string;
   const category = formData.get("category") as string;
+  const targetWeeks = parseInt(formData.get("targetWeeks") as string) || 1;
   
   await db.execute({
-    sql: "UPDATE habits SET name = ?, emoji = ?, color = ?, category = ? WHERE id = ? AND userId = ?",
-    args: [name, emoji, color, category, id, session.user.email]
+    sql: "UPDATE habits SET name = ?, emoji = ?, color = ?, category = ?, targetWeeks = ? WHERE id = ? AND userId = ?",
+    args: [name, emoji, color, category, targetWeeks, id, session.user.email]
   });
 
   revalidatePath("/");

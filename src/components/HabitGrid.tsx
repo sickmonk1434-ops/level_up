@@ -1,7 +1,7 @@
 "use client";
 
 import { toggleCompletion, deleteHabit, editHabit } from "@/app/actions";
-import { Check, Trash2, Edit2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, Trash2, Edit2, X, ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import styles from "./HabitGrid.module.css";
 import { useOptimistic, useTransition, useState } from "react";
 
@@ -11,6 +11,7 @@ interface Habit {
   emoji: string;
   color: string;
   category: string;
+  targetWeeks: number;
 }
 
 interface Completion {
@@ -79,12 +80,11 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
   
   // Find the Monday of the current week
   const currentDayOfWeek = today.getDay();
-  // In JS, Sunday is 0. If it's Sunday, we go back 6 days to Monday. Otherwise, go back (currentDayOfWeek - 1)
   const daysToMonday = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
-  
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - daysToMonday);
-  
+  const actualCurrentMonday = new Date(today);
+  actualCurrentMonday.setDate(today.getDate() - daysToMonday);
+
+  const monday = new Date(actualCurrentMonday);
   // Apply the week offset (weekOffset = -1 means last week)
   monday.setDate(monday.getDate() + (weekOffset * 7));
 
@@ -98,6 +98,63 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
   }
 
   const todayStr = getLocalDateString(today);
+
+  // Helper to calculate streak
+  const calculateStreak = (habitId: string) => {
+    let streak = 0;
+    const sortedCompletions = [...optimisticCompletions]
+      .filter(c => c.habitId === habitId && c.completed === 1)
+      .map(c => c.date)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+    if (sortedCompletions.length === 0) return 0;
+
+    let checkDate = new Date(today);
+    const todayFormatted = getLocalDateString(checkDate);
+    
+    // If not completed today, check yesterday
+    if (!sortedCompletions.includes(todayFormatted)) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    while (true) {
+      const dateStr = getLocalDateString(checkDate);
+      if (sortedCompletions.includes(dateStr)) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return streak;
+  };
+
+  // Helper to calculate week progress (weeks with 7/7)
+  const calculateWeekProgress = (habitId: string) => {
+    const habitCompletions = optimisticCompletions.filter(c => c.habitId === habitId && c.completed === 1);
+    const completionDates = new Set(habitCompletions.map(c => c.date));
+    
+    let perfectWeeks = 0;
+    // We check backwards from the start of the current week (Monday)
+    // To see how many previous full weeks were perfect
+    const startOfThisWeek = new Date(actualCurrentMonday);
+    
+    for (let i = 1; i <= 52; i++) { // Check up to a year back
+      let perfect = true;
+      for (let j = 0; j < 7; j++) {
+        const d = new Date(startOfThisWeek);
+        d.setDate(startOfThisWeek.getDate() - (i * 7) + j);
+        if (!completionDates.has(getLocalDateString(d))) {
+          perfect = false;
+          break;
+        }
+      }
+      if (perfect) perfectWeeks++;
+      else break; // Streak of perfect weeks broken
+    }
+    
+    return { perfectWeeks };
+  };
 
   return (
     <div className={styles.gridContainer}>
@@ -150,8 +207,18 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
                   {habit.emoji}
                 </div>
                 <div className={styles.habitText}>
-                  <div className={styles.habitName}>{habit.name}</div>
-                  <div className={styles.habitCategory}>{habit.category}</div>
+                  <div className={styles.habitName}>
+                    {habit.name}
+                    <span className={styles.streakBadge}>
+                      <Flame size={12} fill="currentColor" /> {calculateStreak(habit.id)}
+                    </span>
+                  </div>
+                  <div className={styles.habitMeta}>
+                    <span className={styles.habitCategory}>{habit.category}</span>
+                    <span className={styles.targetInfo}>
+                      Target: {calculateWeekProgress(habit.id).perfectWeeks}/{habit.targetWeeks} weeks
+                    </span>
+                  </div>
                 </div>
                 <div className={styles.actionButtons}>
                   <button onClick={() => setEditingHabit(habit)} className={styles.editBtn}>
@@ -223,6 +290,11 @@ export function HabitGrid({ habits, completions }: HabitGridProps) {
                   <option value="Learning">Learning</option>
                   <option value="Other">Other</option>
                 </select>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="targetWeeks">Target (Weeks)</label>
+                <input type="number" id="targetWeeks" name="targetWeeks" min="1" max="52" defaultValue={editingHabit.targetWeeks} />
               </div>
 
               <button type="submit" className={styles.submitBtn}>

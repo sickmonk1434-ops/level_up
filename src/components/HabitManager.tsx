@@ -60,6 +60,12 @@ export function HabitManager() {
                 </select>
               </div>
 
+              <div className={styles.formGroup}>
+                <label htmlFor="targetWeeks">Target (Weeks)</label>
+                <input type="number" id="targetWeeks" name="targetWeeks" min="1" max="52" defaultValue="4" />
+                <p className={styles.formHint}>Achieve 7/7 days each week to complete this target.</p>
+              </div>
+
               <button type="submit" className={styles.submitBtn}>
                 Create Habit
               </button>

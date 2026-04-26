@@ -113,6 +113,12 @@
   gap: 1rem;
 }
 
+.formHint {
+  font-size: 0.75rem;
+  color: #a3a3a3;
+  margin-top: 0.25rem;
+}
+
 .submitBtn {
   margin-top: 1rem;
   width: 100%;
