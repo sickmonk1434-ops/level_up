@@ -31,29 +31,17 @@ export default async function Home() {
 
   const habits = await getHabits();
   
-  // Calculate date range for the grid (14 days) and stats (30 days)
+  // Calculate date range for stats and client history (90 days)
   const today = new Date();
   
-  const fourteenDaysAgo = new Date(today);
-  fourteenDaysAgo.setDate(today.getDate() - 13);
-  const formattedStart14 = fourteenDaysAgo.toISOString().split("T")[0];
-  
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 29);
-  const formattedStart30 = thirtyDaysAgo.toISOString().split("T")[0];
+  const ninetyDaysAgo = new Date(today);
+  ninetyDaysAgo.setDate(today.getDate() - 89);
+  const formattedStart90 = ninetyDaysAgo.toISOString().split("T")[0];
   
   const formattedEnd = today.toISOString().split("T")[0];
   
-  // Fetch full 30 days for stats
-  const allCompletions = await getCompletions(formattedStart30, formattedEnd);
-
-  // Generate date array for the last 14 days (for the grid)
-  const dates = [];
-  for (let i = 0; i <= 13; i++) {
-    const d = new Date(fourteenDaysAgo);
-    d.setDate(fourteenDaysAgo.getDate() + i);
-    dates.push(d.toISOString().split("T")[0]);
-  }
+  // Fetch full 90 days for stats and history
+  const allCompletions = await getCompletions(formattedStart90, formattedEnd);
 
   // Calculate Goals
   // 1. Daily Completions (today)
@@ -66,8 +54,13 @@ export default async function Home() {
   const weeklyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart7 && c.completed).length;
   
   // 3. Monthly Completion Rate (last 30 days)
+  const thirtyDaysAgo = new Date(today);
+  thirtyDaysAgo.setDate(today.getDate() - 29);
+  const formattedStart30 = thirtyDaysAgo.toISOString().split("T")[0];
+  const monthlyCompletions = allCompletions.filter((c: any) => c.date >= formattedStart30 && c.completed);
+  
   const monthlyTotalPossible = habits.length * 30;
-  const monthlyCompleted = allCompletions.filter((c: any) => c.completed).length;
+  const monthlyCompleted = monthlyCompletions.length;
   const monthlyRate = habits.length > 0 ? Math.round((monthlyCompleted / monthlyTotalPossible) * 100) : 0;
 
   return (
@@ -122,7 +115,7 @@ export default async function Home() {
             <p>You haven't tracked any habits yet. Click the + button to start leveling up!</p>
           </div>
         ) : (
-          <HabitGrid habits={habits} completions={allCompletions} dates={dates} />
+          <HabitGrid habits={habits} completions={allCompletions} />
         )}
       </section>
 
