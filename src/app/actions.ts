@@ -41,7 +41,8 @@ export async function initDb() {
       defaultsInitialized INTEGER DEFAULT 0,
       targetWeeks INTEGER DEFAULT 4,
       dailyGoal INTEGER DEFAULT 7,
-      height REAL DEFAULT 170
+      height REAL DEFAULT 170,
+      targetWeight REAL DEFAULT 70
     );
   `);
 
@@ -53,6 +54,9 @@ export async function initDb() {
   } catch (e) {}
   try {
     await db.execute(`ALTER TABLE user_settings ADD COLUMN height REAL DEFAULT 170`);
+  } catch (e) {}
+  try {
+    await db.execute(`ALTER TABLE user_settings ADD COLUMN targetWeight REAL DEFAULT 70`);
   } catch (e) {}
 
   await db.execute(`
@@ -228,10 +232,11 @@ export async function updateUserSettings(formData: FormData) {
   const targetWeeks = parseInt(formData.get("targetWeeks") as string) || 4;
   const dailyGoal = parseInt(formData.get("dailyGoal") as string) || 7;
   const height = parseFloat(formData.get("height") as string) || 170;
+  const targetWeight = parseFloat(formData.get("targetWeight") as string) || 70;
 
   await db.execute({
-    sql: "UPDATE user_settings SET targetWeeks = ?, dailyGoal = ?, height = ? WHERE userId = ?",
-    args: [targetWeeks, dailyGoal, height, session.user.email]
+    sql: "UPDATE user_settings SET targetWeeks = ?, dailyGoal = ?, height = ?, targetWeight = ? WHERE userId = ?",
+    args: [targetWeeks, dailyGoal, height, targetWeight, session.user.email]
   });
 
   revalidatePath("/");

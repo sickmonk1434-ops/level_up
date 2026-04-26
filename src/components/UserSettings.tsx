@@ -5,7 +5,7 @@ import { updateUserSettings } from "@/app/actions";
 import { Settings, X } from "lucide-react";
 import styles from "./HabitManager.module.css"; // Reuse modal styles
 
-export function UserSettings({ currentTarget, currentGoal, currentHeight }: { currentTarget: number, currentGoal: number, currentHeight: number }) {
+export function UserSettings({ currentTarget, currentGoal, currentHeight, currentTargetWeight }: { currentTarget: number, currentGoal: number, currentHeight: number, currentTargetWeight: number }) {
   const [isOpen, setIsOpen] = useState(false);
 
   async function handleSubmit(formData: FormData) {
@@ -43,7 +43,12 @@ export function UserSettings({ currentTarget, currentGoal, currentHeight }: { cu
               <div className={styles.formGroup}>
                 <label htmlFor="height">Height (CM)</label>
                 <input type="number" id="height" name="height" step="0.1" min="50" max="250" defaultValue={currentHeight || 170} />
-                <p className={styles.formHint}>Used for BMI calculation.</p>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label htmlFor="targetWeight">Target Weight (KG)</label>
+                <input type="number" id="targetWeight" name="targetWeight" step="0.1" min="30" max="300" defaultValue={currentTargetWeight || 70} />
+                <p className={styles.formHint}>Your goal weight to reach.</p>
               </div>
 
               <div className={styles.formGroup}>

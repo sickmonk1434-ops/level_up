@@ -36,6 +36,7 @@ export default async function Home() {
   const dailyGoal = settings?.dailyGoal || 7;
   const targetWeeks = settings?.targetWeeks || 4;
   const heightCm = settings?.height || 170;
+  const targetWeight = settings?.targetWeight || 70;
   
   // Helper to get local YYYY-MM-DD
   const getLocalDateString = (d: Date) => {
@@ -173,7 +174,12 @@ export default async function Home() {
         </div>
         <div className={styles.headerActions}>
           <WeightTracker latestWeight={latestWeight} />
-          <UserSettings currentTarget={targetWeeks} currentGoal={dailyGoal} currentHeight={heightCm} />
+          <UserSettings 
+            currentTarget={targetWeeks} 
+            currentGoal={dailyGoal} 
+            currentHeight={heightCm} 
+            currentTargetWeight={targetWeight} 
+          />
           <AuthButtons session={session} />
         </div>
       </header>
@@ -214,8 +220,10 @@ export default async function Home() {
             <Scale size={24} />
           </div>
           <div className={styles.statInfo}>
-            <p>Current Weight</p>
-            <h3>{latestWeight ? latestWeight : '--'} <span style={{fontSize: '1rem', color: '#a3a3a3'}}>KG</span></h3>
+            <p>Weight Progress</p>
+            <h3>{latestWeight ? latestWeight : '--'} <span style={{fontSize: '0.8rem', color: '#a3a3a3', marginLeft: '0.5rem'}}>
+              {latestWeight ? `${(latestWeight - targetWeight).toFixed(1)} KG to target` : ''}
+            </span></h3>
           </div>
         </div>
 
