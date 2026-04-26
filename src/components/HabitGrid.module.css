@@ -74,12 +74,14 @@
 .datesColumn {
   display: flex;
   flex: 1;
-  gap: 0.5rem;
+  gap: 1.5rem; /* Increased gap */
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .dateHeader {
-  width: 36px;
-  min-width: 36px;
+  width: 44px;
+  min-width: 44px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -88,13 +90,13 @@
 }
 
 .dayName {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #737373;
   text-transform: uppercase;
 }
 
 .dayNum {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #d4d4d4;
 }
@@ -338,10 +340,10 @@
 }
 
 .cellBtn {
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  border-radius: 0.5rem;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--card-border);
   display: flex;
